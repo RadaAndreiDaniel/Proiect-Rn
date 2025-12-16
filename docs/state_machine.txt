@@ -1,0 +1,54 @@
+┌───────┐
+│ IDLE  │
+└───┬───┘
+    │ User selects image
+    ▼
+┌────────────┐
+│ LOAD_IMAGE │
+└───┬────────┘
+    │ Image valid
+    ▼
+┌──────────────────┐
+│ MANUAL_ANNOTATION│
+└───┬──────────────┘
+    │ Annotation confirmed
+    ▼
+┌────────────┐
+│ PREPROCESS │
+└───┬────────┘
+    │ Image ready
+    ▼
+┌──────────────┐
+│ RN_INFERENCE │
+└───┬──────────┘
+    │ Prediction done
+    ▼
+┌────────────────┐
+│ DISPLAY_RESULT │
+└───┬────────────┘
+    │ End / New image
+    ▼
+┌───────┐
+│ IDLE  │
+└───────┘
+
+ERROR transitions:
+LOAD_IMAGE ─────────▶ ERROR
+MANUAL_ANNOTATION ──▶ ERROR
+ERROR ──────────────▶ IDLE
+
+
+
+Stările principale sunt:
+
+LOAD_IMAGE – încărcarea imaginii de test
+
+MANUAL_ANNOTATION – utilizatorul delimitează banda de rulare
+
+PREPROCESS – redimensionare și normalizare
+
+RN_INFERENCE – inferența rețelei neuronale
+
+DISPLAY_RESULT – afișarea verdictului și scorurilor de încredere
+
+Starea ERROR gestionează situații precum imagine invalidă sau adnotare anulată de utilizator.
