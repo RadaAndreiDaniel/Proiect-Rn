@@ -1,0 +1,1 @@
+aici voi face etapa 6, unde trebuie sa antrenez si sa obtin varianta finala cu acuratete de 0.7, in loc de 0.63

@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clasificare Anvelopă</title>
+
+<style>
+/* RESET */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Roboto",sans-serif}
+
+/* ========= THEME VARIABLES ========= */
+:root{
+  /* default = cald (roșu) */
+  --bg-1:#000000; --bg-2:#1a0000; --bg-3:#3b0000;
+
+  --accent:#ff2a2a;
+  --accent-2:#ff0000;
+  --accent-dark:#7a0000;
+
+  --glow: rgba(255,0,0,.55);
+  --glow-strong: rgba(255,0,0,.9);
+
+  --border: rgba(255,0,0,.35);
+  --border-2: rgba(255,0,0,.4);
+  --panel: rgba(10,10,10,0.55);
+
+  --title:#ff2a2a;
+  --muted:#ff8080;
+
+  --input-bg:#0d0d0d;
+  --pre-bg:#0b0b0b;
+
+  /* modern UI */
+  --card-bg: rgba(10,14,18,0.55);
+  --card-border: rgba(255,255,255,0.10);
+  --glass-blur: blur(18px);
+
+  /* progress bar (blue modern) */
+  --bar-bg: rgba(255,255,255,0.08);
+  --bar-fill-a: rgba(56,189,248,0.95);
+  --bar-fill-b: rgba(37,99,235,0.95);
+  --bar-glow: rgba(59,130,246,0.35);
+
+  /* ===== Layout ===== */
+  --sidePad: 100px;
+  --panelW: 260px;     /* corner cards */
+  --centerMax: 860px;
+
+  /* NEW: hard limits so center never overlaps side panels */
+  --centerGap: 24px;   /* extra breathing space */
+  --previewMaxW: 760px; /* ONLY preview limit (user request) */
+  --previewMaxH: 420px; /* ONLY preview limit (user request) */
+}
+
+/* iarnă = albastru închis */
+body.theme-winter{
+  --bg-1:#00040a; --bg-2:#021225; --bg-3:#001a33;
+
+  --accent:#2aa8ff;
+  --accent-2:#33aaff;
+  --accent-dark:#003a66;
+
+  --glow: rgba(51,170,255,.45);
+  --glow-strong: rgba(51,170,255,.85);
+
+  --border: rgba(51,170,255,.35);
+  --border-2: rgba(51,170,255,.45);
+  --panel: rgba(6,12,20,0.62);
+
+  --title:#66ccff;
+  --muted:#8fdcff;
+
+  --input-bg:#07101a;
+  --pre-bg:#070d14;
+
+  --card-bg: rgba(6,12,20,0.62);
+}
+
+/* BODY */
+body{
+  min-height:100vh;
+  color:#f2f2f2;
+  transition: background .25s ease;
+
+  /* FUNDAL tip "AI dashboard" */
+  background:
+    radial-gradient(900px 520px at 18% 22%, rgba(120,170,255,0.22), transparent 60%),
+    radial-gradient(1000px 620px at 78% 30%, rgba(70,120,255,0.18), transparent 62%),
+    radial-gradient(1200px 780px at 50% 92%, rgba(40,90,200,0.18), transparent 65%),
+    radial-gradient(1400px 900px at 50% 50%, rgba(10,25,60,0.55), rgba(0,0,0,0.85) 70%),
+    linear-gradient(135deg, #070b14 0%, #071a33 38%, #0b2a56 70%, #071224 100%);
+}
+
+/* ======= BACKGROUND BLUR LAYER ======= */
+#appWrap{ width:100%; min-height:100vh; }
+#appWrap.blurred{
+  filter: blur(10px);
+  transform: scale(0.995);
+  opacity: 0.92;
+  transition: filter .18s ease, transform .18s ease, opacity .18s ease;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* ======= SEASON OVERLAY ======= */
+#seasonOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  z-index:999;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+}
+#seasonOverlay.show{ display:flex; }
+
+.season-modal{
+  width:100%;
+  max-width:760px;
+  border-radius:22px;
+  background: rgba(10,10,10,0.72);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 0 32px rgba(0,0,0,.55);
+  padding: 22px 18px 18px;
+  backdrop-filter: blur(14px);
+}
+
+.season-head{ margin-bottom: 14px; }
+
+.season-head h1{
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* === SEASON PILLS === */
+.season-options{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top: 18px;
+}
+
+.season-pill{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 18px;
+  border-radius:999px;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  min-width: 260px;
+  justify-content:center;
+}
+
+.season-pill:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0,0,0,.20);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.season-pill input{ display:none; }
+
+.season-dot{
+  width:12px;height:12px;border-radius:50%;
+  box-shadow: 0 0 10px rgba(255,255,255,0.18);
+}
+.season-text{
+  font-weight:700;
+  letter-spacing: .8px;
+  font-size: 14px;
+}
+
+/* iarnă (albastru) */
+.season-pill.winter{ border-color: rgba(102,204,255,0.30); }
+.season-pill.winter .season-dot{
+  background:#66ccff;
+  box-shadow: 0 0 16px rgba(51,170,255,0.55);
+}
+.season-pill.winter.active{
+  background: rgba(30,80,110,0.25);
+  box-shadow: 0 0 26px rgba(51,170,255,0.32);
+  border-color: rgba(102,204,255,0.55);
+}
+
+/* cald (galben) */
+.season-pill.warm{ border-color: rgba(255,204,0,0.28); }
+.season-pill.warm .season-dot{
+  background:#ffcc00;
+  box-shadow: 0 0 16px rgba(255,170,0,0.55);
+}
+.season-pill.warm.active{
+  background: rgba(120,95,20,0.22);
+  box-shadow: 0 0 26px rgba(255,170,0,0.26);
+  border-color: rgba(255,204,0,0.55);
+}
+
+/* ========= ALERT BAR ========= */
+#alertBar{
+  display:none;
+  position:sticky;
+  top:16px;
+  z-index:50;
+  margin:16px auto 0;
+  max-width:920px;
+  padding:14px 16px;
+  border-radius:14px;
+  background: linear-gradient(135deg, rgba(255,50,50,0.16), rgba(255,0,0,0.06));
+  border: 1px solid rgba(255,60,60,0.45);
+  box-shadow: 0 0 22px rgba(255,0,0,.25);
+  color:#ffd3d3;
+  text-align:left;
+  backdrop-filter: blur(10px);
+}
+body.theme-winter #alertBar{
+  background: linear-gradient(135deg, rgba(51,170,255,0.16), rgba(0,90,160,0.06));
+  border: 1px solid rgba(102,204,255,0.45);
+  box-shadow: 0 0 22px rgba(51,170,255,.20);
+  color:#d7f1ff;
+}
+#alertBar strong{color:#fff}
+#alertClose{
+  float:right;cursor:pointer;font-size:18px;line-height:1;
+  opacity:.9;padding:2px 6px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.18);
+}
+#alertClose:hover{opacity:1}
+
+.alert-actions{
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.alert-actions button{
+  margin-top: 0;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(0,0,0,.35);
+  width: auto;
+}
+
+/* =========================
+   LAYOUT (NO OVERLAP GUARANTEE)
+   ========================= */
+.page{
+  min-height:100vh;
+  padding: 0 24px 60px;
+  position: relative;
+}
+
+/* cards */
+.card{
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: var(--glass-blur);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  padding:1px;
+  border-radius:20px;
+  background: linear-gradient(135deg,
+    rgba(59,130,246,0.26),
+    rgba(255,255,255,0.05),
+    rgba(59,130,246,0.14)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events:none;
+}
+
+/* fixed corner panels */
+.panel-left{
+  position: fixed;
+  top: var(--sidePad);
+  left: var(--sidePad);
+  width: var(--panelW);
+  padding: 14px 14px 12px;
+  z-index: 30;
+}
+
+.panel-right{
+  position: fixed;
+  top: var(--sidePad);
+  right: var(--sidePad);
+  width: var(--panelW);
+  padding: 14px 14px 12px;
+  z-index: 30;
+}
+
+/* Center area width is CLAMPED so it NEVER passes inner margins of fixed panels */
+.stage{
+  min-height: 100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap: 18px;
+  padding-top: 95px;
+
+  width: min(
+    var(--centerMax),
+    calc(100vw - (2 * (var(--sidePad) + var(--panelW) + var(--centerGap))))
+  );
+  margin: 0 auto;
+}
+
+@supports (width: max(1px, 2px)) {
+  .stage{
+    width: max(
+      320px,
+      min(
+        var(--centerMax),
+        calc(100vw - (2 * (var(--sidePad) + var(--panelW) + var(--centerGap))))
+      )
+    );
+  }
+}
+
+.stage-block{
+  width: 100%;
+  padding: 18px;
+  text-align:center;
+}
+
+.stage-title{
+  margin: 4px 0 12px;
+  color: #7dd3fc;
+  text-transform:uppercase;
+  letter-spacing:3px;
+  font-weight: 900;
+  font-size: 12px;
+  opacity: .95;
+}
+
+/* Left panel UI */
+.panel-left h2{
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #7dd3fc;
+  margin-bottom: 12px;
+}
+.section{
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.row{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px !important;
+}
+
+.method-pill{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+  cursor:pointer;
+  user-select:none;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.method-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(125,211,252,0.30);
+  background: rgba(59,130,246,0.08);
+}
+.method-pill span{
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.90);
+}
+input[type="radio"]{ accent-color: var(--accent); transform: scale(1.08); }
+
+input[type="file"]{
+  margin-top: 10px;
+  padding: 12px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.30);
+  color: rgba(255,255,255,0.75);
+  outline: none;
+}
+input[type="file"]:hover{
+  border-color: rgba(125,211,252,0.32);
+}
+
+button{
+  margin-top: 12px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor:pointer;
+  text-transform: uppercase;
+  font-weight: 1000;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, var(--bar-fill-a), var(--bar-fill-b));
+  box-shadow: 0 12px 26px rgba(37,99,235,0.22);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  color:#fff;
+}
+button:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 16px 36px rgba(37,99,235,0.34);
+}
+
+/* Right panel results */
+.panel-right h3{
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #7dd3fc;
+  margin-bottom: 10px;
+}
+
+#verdict{
+  display:none;
+  margin: 6px 0 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  text-align:center;
+  font-weight: 1100;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  font-size: 18px;
+}
+
+.verdict-vara{ color:#ff4040; text-shadow:0 0 15px #ff0000; }
+.verdict-iarna{ color:#66ccff; text-shadow:0 0 15px #33aaff; }
+.verdict-mixt{ color:#ffcc00; text-shadow:0 0 15px #ffaa00; }
+
+.results-grid{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.result-row{
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.09);
+}
+
+.result-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+.result-name{
+  font-weight: 1000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 11px;
+  opacity: .95;
+}
+.result-val{
+  font-variant-numeric: tabular-nums;
+  font-weight: 1000;
+  opacity: .95;
+  font-size: 12px;
+}
+
+.bar{
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  overflow:hidden;
+}
+.bar > i{
+  display:block;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--bar-fill-a), var(--bar-fill-b));
+  box-shadow: 0 0 16px var(--bar-glow);
+  transition: width .35s ease;
+}
+
+/* Center previews */
+.preview-box{ display:flex; justify-content:center; }
+
+/* ONLY preview cap */
+#preview{
+  max-width: min(100%, var(--previewMaxW));
+  max-height: min(60vh, var(--previewMaxH));
+  object-fit:contain;
+  border-radius:20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.52),
+    0 0 0 1px rgba(59,130,246,0.10);
+  display:none;
+}
+
+#videoBox{ display:none; justify-content:center; }
+#videoPreview{
+  max-width: min(100%, var(--previewMaxW));
+  max-height: min(60vh, var(--previewMaxH));
+  object-fit:contain;
+  border-radius:20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.52),
+    0 0 0 1px rgba(59,130,246,0.10);
+}
+
+.pattern-box{ display:flex; justify-content:center; }
+#crop{
+  width: min(520px, 92vw);
+  max-height: 32vh;
+  object-fit:contain;
+  border-radius:20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.52),
+    0 0 0 1px rgba(59,130,246,0.10);
+  display:none;
+}
+
+/* JSON */
+#jsonToggle{
+  margin-top: 12px;
+  cursor:pointer;
+  font-size:13px;
+  color: var(--muted);
+  user-select:none;
+  opacity: .95;
+  text-align:center;
+}
+#jsonToggle span{
+  font-size:18px;
+  display:inline-block;
+  transition: transform .3s;
+}
+#jsonToggle.open span{ transform: rotate(180deg); }
+pre{
+  margin: 12px auto 0;
+  padding: 14px;
+  background: var(--pre-bg);
+  border-radius: 16px;
+  border:1px solid rgba(255,255,255,0.10);
+  color:#ff9b9b;
+  font-size:12px;
+  max-height: 260px;
+  overflow:auto;
+  display:none;
+  text-align:left;
+  line-height:1.55;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+body.theme-winter pre{ color:#bfe8ff; }
+
+/* responsive */
+@media (max-width: 1200px){
+  :root{ --sidePad: 24px; --panelW: 260px; --centerGap: 18px; }
+  .panel-left{ left: var(--sidePad); top: var(--sidePad); }
+  .panel-right{ right: var(--sidePad); top: var(--sidePad); }
+  .stage{ padding-top: 24px; }
+}
+
+@media (max-width: 900px){
+  .panel-left, .panel-right{
+    position: static;
+    width: min(var(--centerMax), calc(100vw - 48px));
+    margin: 18px auto 0;
+  }
+  .stage{
+    width: min(var(--centerMax), calc(100vw - 48px));
+    padding-top: 18px;
+  }
+}
+
+@media (max-width:520px){
+  #verdict{ font-size:16px; letter-spacing: 3px; }
+  .season-pill{ min-width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- OVERLAY SEZON -->
+<div id="seasonOverlay" class="show" aria-modal="true" role="dialog">
+  <div class="season-modal">
+    <div class="season-head">
+      <h1>Alegeți sezonul curent</h1>
+    </div>
+
+    <div class="season-options" id="seasonOptions">
+      <label class="season-pill winter">
+        <input type="radio" name="season" value="iarna" />
+        <span class="season-dot"></span>
+        <span class="season-text">Iarnă</span>
+      </label>
+
+      <label class="season-pill warm">
+        <input type="radio" name="season" value="cald" />
+        <span class="season-dot"></span>
+        <span class="season-text">Vara / Primăvară / Toamnă</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- TOT SITE-UL -->
+<div id="appWrap" class="blurred">
+  <div class="page">
+
+    <!-- ALERT BAR -->
+    <div id="alertBar">
+      <span id="alertClose" onclick="hideAlert()">✕</span>
+      <div style="text-align:center" id="alertText">
+        <strong>NECONFORM</strong> — Anvelopele nu sunt conforme sezonului curent.
+      </div>
+      <div class="alert-actions" id="alertActions" style="display:none;">
+        <button type="button" onclick="openSeasonOverlay()">Schimbă sezonul</button>
+      </div>
+    </div>
+
+    <!-- LEFT -->
+    <div class="panel-left card">
+      <h2>Upload & metodă</h2>
+
+      <div class="section">
+        <div class="row">
+          <label class="method-pill">
+            <input type="radio" name="method" value="yolo" checked>
+            <span>YOLO</span>
+          </label>
+
+          <label class="method-pill">
+            <input type="radio" name="method" value="manual">
+            <span>MANUAL</span>
+          </label>
+        </div>
+
+        <input type="file" id="file" accept="image/*,video/*">
+        <button onclick="send()">Analizează</button>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="panel-right card">
+      <h3>Rezultate</h3>
+
+      <div id="verdict"></div>
+
+      <div class="results-grid" id="resultsGrid">
+        <div class="result-row">
+          <div class="result-top">
+            <div class="result-name">Vara</div>
+            <div class="result-val" id="pVara">—%</div>
+          </div>
+          <div class="bar"><i id="bVara"></i></div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-top">
+            <div class="result-name">Iarnă</div>
+            <div class="result-val" id="pIarna">—%</div>
+          </div>
+          <div class="bar"><i id="bIarna"></i></div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-top">
+            <div class="result-name">Mixt</div>
+            <div class="result-val" id="pMixt">—%</div>
+          </div>
+          <div class="bar"><i id="bMixt"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="stage">
+
+      <div class="stage-block card">
+        <div class="stage-title">Fișier încărcat</div>
+
+        <div id="videoBox" class="preview-box">
+          <video id="videoPreview" controls></video>
+        </div>
+
+        <div class="preview-box">
+          <img id="preview" alt="preview detecție">
+        </div>
+      </div>
+
+      <div class="stage-block card">
+        <div class="stage-title">Pattern prelucrat</div>
+        <div class="pattern-box">
+          <img id="crop" alt="pattern prelucrat">
+        </div>
+
+        <div id="jsonToggle" onclick="toggleJson()">
+          Detalii tehnice <span>⌄</span>
+        </div>
+        <pre id="out"></pre>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ======= STATE ======= */
+let chosenSeason = null; // "iarna" | "cald"
+
+/* ======= THEME ======= */
+function applyThemeBySeason(season){
+  if(season === "iarna") document.body.classList.add("theme-winter");
+  else document.body.classList.remove("theme-winter");
+}
+
+/* ======= OVERLAY CONTROL ======= */
+function showOverlay(){
+  document.getElementById("seasonOverlay").classList.add("show");
+  document.getElementById("appWrap").classList.add("blurred");
+}
+function hideOverlay(){
+  document.getElementById("seasonOverlay").classList.remove("show");
+  document.getElementById("appWrap").classList.remove("blurred");
+}
+function openSeasonOverlay(){
+  hideAlert();
+  showOverlay();
+}
+
+/* ======= ALERT ======= */
+function showAlert(withActions=false){
+  const bar = document.getElementById("alertBar");
+  const actions = document.getElementById("alertActions");
+  actions.style.display = withActions ? "flex" : "none";
+  bar.style.display = "block";
+}
+function hideAlert(){
+  document.getElementById("alertBar").style.display = "none";
+  document.getElementById("alertActions").style.display = "none";
+}
+
+/* ======= VIDEO PREVIEW ======= */
+function showVideoImmediately(file){
+  const videoBox = document.getElementById("videoBox");
+  const video = document.getElementById("videoPreview");
+  video.src = URL.createObjectURL(file);
+  videoBox.style.display = "flex";
+  video.style.display = "block";
+  video.load();
+  video.play().catch(()=>{});
+}
+function hideVideo(){
+  const videoBox = document.getElementById("videoBox");
+  const video = document.getElementById("videoPreview");
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  videoBox.style.display = "none";
+}
+
+/* ======= JSON TOGGLE ======= */
+function toggleJson(){
+  const pre = document.getElementById("out");
+  const toggle = document.getElementById("jsonToggle");
+  const hidden = window.getComputedStyle(pre).display === "none";
+  pre.style.display = hidden ? "block" : "none";
+  toggle.classList.toggle("open", hidden);
+}
+
+/* ======= SEASON PILLS UI ======= */
+function setActivePill(season){
+  document.querySelectorAll(".season-pill").forEach(p => p.classList.remove("active"));
+  if(season === "iarna") document.querySelector(".season-pill.winter")?.classList.add("active");
+  if(season === "cald") document.querySelector(".season-pill.warm")?.classList.add("active");
+}
+
+document.getElementById("seasonOptions").addEventListener("click", (e)=>{
+  const pill = e.target.closest(".season-pill");
+  if(!pill) return;
+
+  const input = pill.querySelector('input[name="season"]');
+  if(!input) return;
+
+  input.checked = true;
+
+  const season = input.value; // "iarna" / "cald"
+  chosenSeason = season;
+
+  setActivePill(season);
+  applyThemeBySeason(season);
+
+  hideOverlay();
+});
+
+document.getElementById("seasonOptions").addEventListener("change", ()=>{
+  const season = document.querySelector('input[name="season"]:checked')?.value;
+  if(!season) return;
+  chosenSeason = season;
+  setActivePill(season);
+  applyThemeBySeason(season);
+  hideOverlay();
+});
+
+/* =========================
+   RESULTS UI (FIXED NORMALIZATION)
+   ========================= */
+
+/* parse safe number (accept string too) */
+function toNum(x){
+  const n = (typeof x === "string") ? Number(x.replace(",", ".")) : Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+
+/*
+  Detect scale for the whole src object:
+  - If max <= 1 and sum ~ 1 => probabilities 0..1 => convert to %
+  - If max > 1 => already percents (or mixed) => DO NOT multiply small values by 100
+*/
+function detectScale(src){
+  const vals = [];
+  for (const k of Object.keys(src || {})){
+    const n = toNum(src[k]);
+    if(n == null) continue;
+    if(n < 0) continue;
+    vals.push(n);
+  }
+  if(vals.length === 0) return "unknown";
+
+  const max = Math.max(...vals);
+  const sum = vals.reduce((a,b)=>a+b,0);
+
+  // clear probability case
+  if(max <= 1.000001 && sum <= 1.200001) return "prob01";
+
+  // percent (0..100) or already percent-like
+  return "percent";
+}
+
+function normalizeByScale(v, scale){
+  const n = toNum(v);
+  if(n == null) return null;
+
+  if(scale === "prob01"){
+    return n * 100;
+  }
+  // scale === "percent" (IMPORTANT: no *100 here)
+  return n;
+}
+
+function setBar(name, percent){
+  const pEl = document.getElementById("p" + name);
+  const bEl = document.getElementById("b" + name);
+
+  if(percent == null){
+    pEl.textContent = "—%";
+    bEl.style.width = "0%";
+    return;
+  }
+  const pct = Math.max(0, Math.min(100, percent));
+  pEl.textContent = pct.toFixed(0) + "%";
+  bEl.style.width = pct.toFixed(2) + "%";
+}
+
+function updateScoresUI(d){
+  const candidates = [d?.scores, d?.probabilities, d?.percentages, d?.probs, d?.confidences];
+  let src = null;
+  for(const c of candidates){
+    if(c && typeof c === "object") { src = c; break; }
+  }
+
+  let vara = null, iarna = null, mixt = null;
+
+  if(src){
+    const scale = detectScale(src);
+
+    // accept multiple key variants
+    vara = normalizeByScale(src.vara ?? src.summer ?? src.Vara ?? src.Summer, scale);
+    iarna = normalizeByScale(src.iarna ?? src.winter ?? src.Iarna ?? src.Winter, scale);
+    mixt = normalizeByScale(src.mixt ?? src.mixed ?? src.Mixt ?? src.Mixed, scale);
+  }
+
+  // fallback: doar label
+  const label = (d?.label || "").toLowerCase();
+  if(vara == null && iarna == null && mixt == null){
+    if(label === "vara"){ vara = 100; iarna = 0; mixt = 0; }
+    else if(label === "iarna"){ vara = 0; iarna = 100; mixt = 0; }
+    else if(label === "mixt"){ vara = 0; iarna = 0; mixt = 100; }
+  }
+
+  setBar("Vara", vara);
+  setBar("Iarna", iarna);
+  setBar("Mixt", mixt);
+}
+
+/* ======= SEND ======= */
+function send(){
+  if(!chosenSeason){
+    showOverlay();
+    return;
+  }
+
+  hideAlert();
+
+  const f = document.getElementById("file").files[0];
+  if(!f) return alert("Selectează un fișier");
+
+  const method = document.querySelector('input[name="method"]:checked').value;
+
+  if (f.type && f.type.startsWith("video/")) showVideoImmediately(f);
+  else hideVideo();
+
+  const fd = new FormData();
+  fd.append("file", f);
+  fd.append("method", method);
+
+  fetch("/predict", { method:"POST", body:fd })
+    .then(r => r.json())
+    .then(d => {
+      /* VERDICT */
+      const verdict = document.getElementById("verdict");
+      verdict.className = "";
+      verdict.style.display = "block";
+
+      const label = (d.label || "").toLowerCase();
+      verdict.textContent = label.toUpperCase();
+
+      if (label === "vara") verdict.classList.add("verdict-vara");
+      else if (label === "iarna") verdict.classList.add("verdict-iarna");
+      else if (label === "mixt") verdict.classList.add("verdict-mixt");
+
+      /* NECONFORM: iarnă selectat + verdict vara */
+      if (chosenSeason === "iarna" && label === "vara") {
+        showAlert(true);
+      }
+
+      /* progress bars */
+      updateScoresUI(d);
+
+      /* JSON */
+      document.getElementById("out").textContent = JSON.stringify(d, null, 2);
+
+      /* PREVIEW */
+      if (d.bbox_url) {
+        const img = document.getElementById("preview");
+        img.src = d.bbox_url + "?t=" + Date.now();
+        img.style.display = "block";
+      }
+
+      /* CROP */
+      if (d.crop_url) {
+        const crop = document.getElementById("crop");
+        crop.src = d.crop_url + "?t=" + Date.now();
+        crop.style.display = "block";
+      }
+    })
+    .catch(err => {
+      alert("Eroare la procesare. Vezi consola / server.");
+      console.error(err);
+    });
+}
+
+/* init */
+showOverlay();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clasificare Anvelopă</title>
+
+<style>
+/* RESET */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Roboto",sans-serif}
+
+/* ========= THEME VARIABLES ========= */
+:root{
+  /* default = cald (roșu) */
+  --bg-1:#000000; --bg-2:#1a0000; --bg-3:#3b0000;
+
+  --accent:#ff2a2a;
+  --accent-2:#ff0000;
+  --accent-dark:#7a0000;
+
+  --glow: rgba(255,0,0,.55);
+  --glow-strong: rgba(255,0,0,.9);
+
+  --border: rgba(255,0,0,.35);
+  --border-2: rgba(255,0,0,.4);
+  --panel: rgba(10,10,10,0.55);
+
+  --title:#ff2a2a;
+  --muted:#ff8080;
+
+  --input-bg:#0d0d0d;
+  --pre-bg:#0b0b0b;
+}
+
+/* iarnă = albastru închis */
+body.theme-winter{
+  --bg-1:#00040a; --bg-2:#021225; --bg-3:#001a33;
+
+  --accent:#2aa8ff;
+  --accent-2:#33aaff;
+  --accent-dark:#003a66;
+
+  --glow: rgba(51,170,255,.45);
+  --glow-strong: rgba(51,170,255,.85);
+
+  --border: rgba(51,170,255,.35);
+  --border-2: rgba(51,170,255,.45);
+  --panel: rgba(6,12,20,0.62);
+
+  --title:#66ccff;
+  --muted:#8fdcff;
+
+  --input-bg:#07101a;
+  --pre-bg:#070d14;
+}
+
+/* BODY */
+body{
+  min-height:100vh;
+  background: linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
+  color:#f2f2f2;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:40px 20px;
+  transition: background .25s ease;
+}
+
+/* WRAPPER CENTRAL */
+.main{
+  width:100%;
+  max-width:1100px;
+  text-align:center;
+}
+
+/* ======= BACKGROUND BLUR LAYER ======= */
+#appWrap{
+  width:100%;
+}
+#appWrap.blurred{
+  filter: blur(10px);
+  transform: scale(0.995);
+  opacity: 0.92;
+  transition: filter .18s ease, transform .18s ease, opacity .18s ease;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* ======= SEASON OVERLAY ======= */
+#seasonOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  z-index:999;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+}
+#seasonOverlay.show{ display:flex; }
+
+.season-modal{
+  width:100%;
+  max-width:760px;
+  border-radius:22px;
+  background: rgba(10,10,10,0.72);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 0 32px rgba(0,0,0,.55);
+  padding: 22px 18px 18px;
+  backdrop-filter: blur(14px);
+}
+
+.season-head{ margin-bottom: 14px; }
+
+.season-head h1{
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* === SEASON PILLS === */
+.season-options{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top: 18px;
+}
+
+.season-pill{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 18px;
+  border-radius:999px;
+  cursor:pointer;
+  user-select:none;
+  border:1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  min-width: 260px;
+  justify-content:center;
+}
+
+.season-pill:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0,0,0,.20);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.season-pill input{ display:none; }
+
+.season-dot{
+  width:12px;height:12px;border-radius:50%;
+  box-shadow: 0 0 10px rgba(255,255,255,0.18);
+}
+.season-text{
+  font-weight:700;
+  letter-spacing: .8px;
+  font-size: 14px;
+}
+
+/* iarnă (albastru) */
+.season-pill.winter{ border-color: rgba(102,204,255,0.30); }
+.season-pill.winter .season-dot{
+  background:#66ccff;
+  box-shadow: 0 0 16px rgba(51,170,255,0.55);
+}
+.season-pill.winter.active{
+  background: rgba(30,80,110,0.25);
+  box-shadow: 0 0 26px rgba(51,170,255,0.32);
+  border-color: rgba(102,204,255,0.55);
+}
+
+/* cald (galben) */
+.season-pill.warm{ border-color: rgba(255,204,0,0.28); }
+.season-pill.warm .season-dot{
+  background:#ffcc00;
+  box-shadow: 0 0 16px rgba(255,170,0,0.55);
+}
+.season-pill.warm.active{
+  background: rgba(120,95,20,0.22);
+  box-shadow: 0 0 26px rgba(255,170,0,0.26);
+  border-color: rgba(255,204,0,0.55);
+}
+
+/* ========= ALERT BAR ========= */
+#alertBar{
+  display:none;
+  position:sticky;
+  top:16px;
+  z-index:50;
+  margin:0 auto 18px;
+  max-width:920px;
+  padding:14px 16px;
+  border-radius:14px;
+  background: linear-gradient(135deg, rgba(255,50,50,0.16), rgba(255,0,0,0.06));
+  border: 1px solid rgba(255,60,60,0.45);
+  box-shadow: 0 0 22px rgba(255,0,0,.25);
+  color:#ffd3d3;
+  text-align:left;
+  backdrop-filter: blur(10px);
+}
+body.theme-winter #alertBar{
+  background: linear-gradient(135deg, rgba(51,170,255,0.16), rgba(0,90,160,0.06));
+  border: 1px solid rgba(102,204,255,0.45);
+  box-shadow: 0 0 22px rgba(51,170,255,.20);
+  color:#d7f1ff;
+}
+#alertBar strong{color:#fff}
+#alertClose{
+  float:right;cursor:pointer;font-size:18px;line-height:1;
+  opacity:.9;padding:2px 6px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.18);
+}
+#alertClose:hover{opacity:1}
+
+.alert-actions{
+  margin-top: 14px;
+  display: flex;
+  justify-content: center; /* centru buton */
+  align-items: center;
+}
+.alert-actions button{
+  margin-top: 0;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(0,0,0,.35);
+}
+
+/* VERDICT */
+#verdict{
+  font-size:44px;
+  margin-bottom:30px;
+  letter-spacing:4px;
+  font-weight:bold;
+  text-transform:uppercase;
+  display:none;
+}
+.verdict-vara{ color:#ff4040; text-shadow:0 0 15px #ff0000; }
+.verdict-iarna{ color:#66ccff; text-shadow:0 0 15px #33aaff; }
+.verdict-mixt{ color:#ffcc00; text-shadow:0 0 15px #ffaa00; }
+
+/* TITLURI */
+h2,h3{
+  margin:30px 0 18px;
+  color: var(--title);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  transition: color .2s ease;
+}
+
+/* INPUTS */
+label{ margin:0 12px; }
+input[type="radio"]{ accent-color: var(--accent); transform: scale(1.2); }
+input[type="file"]{
+  margin-top:18px;
+  padding:10px;
+  background: var(--input-bg);
+  border:1px solid var(--border-2);
+  border-radius:8px;
+  color:#ccc;
+  width:100%;
+  max-width:420px;
+  transition:border-color .2s ease;
+}
+
+/* BUTON */
+button{
+  margin-top:22px;
+  padding:14px 36px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-dark));
+  border:none;
+  border-radius:30px;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  text-transform:uppercase;
+  box-shadow:0 0 12px var(--glow);
+  transition: .3s;
+}
+button:hover{
+  box-shadow: 0 0 28px var(--glow-strong);
+  transform: translateY(-2px);
+}
+
+/* PREVIEW */
+.preview-box{ margin-top:25px; display:flex; justify-content:center; }
+#preview{
+  max-width:100%;
+  max-height:75vh;
+  object-fit:contain;
+  border-radius:16px;
+  box-shadow:0 0 22px var(--glow);
+  display:none;
+}
+
+/* VIDEO PREVIEW */
+#videoBox{ margin-top:25px; display:none; justify-content:center; }
+#videoPreview{
+  max-width:100%;
+  max-height:75vh;
+  object-fit:contain;
+  border-radius:16px;
+  box-shadow:0 0 22px var(--glow);
+}
+
+/* PATTERN */
+.pattern-box{ margin-top:20px; display:flex; justify-content:center; }
+#crop{
+  max-width:420px;
+  max-height:38vh;
+  object-fit:contain;
+  border-radius:14px;
+  border:2px solid var(--accent);
+  box-shadow:0 0 18px var(--glow);
+  display:none;
+}
+
+/* JSON */
+#jsonToggle{
+  margin-top:40px;
+  cursor:pointer;
+  font-size:14px;
+  color: var(--muted);
+  user-select:none;
+}
+#jsonToggle span{
+  font-size:20px;
+  display:inline-block;
+  transition: transform .3s;
+}
+#jsonToggle.open span{ transform: rotate(180deg); }
+pre{
+  margin:15px auto 0;
+  padding:15px;
+  background: var(--pre-bg);
+  border-radius:10px;
+  border:1px solid var(--border);
+  color:#ff9b9b;
+  font-size:13px;
+  max-height:300px;
+  overflow:auto;
+  display:none;
+  text-align:center;
+  line-height:1.6;
+  font-family:monospace;
+}
+body.theme-winter pre{ color:#bfe8ff; }
+
+/* responsive */
+@media (max-width:520px){
+  #verdict{ font-size:34px; letter-spacing:2px; }
+  .season-pill{ min-width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- OVERLAY SEZON (centru + blur spate) -->
+<div id="seasonOverlay" class="show" aria-modal="true" role="dialog">
+  <div class="season-modal">
+    <div class="season-head">
+      <h1>Alegeți sezonul curent</h1>
+    </div>
+
+    <div class="season-options" id="seasonOptions">
+      <label class="season-pill winter">
+        <input type="radio" name="season" value="iarna" />
+        <span class="season-dot"></span>
+        <span class="season-text">Iarnă</span>
+      </label>
+
+      <label class="season-pill warm">
+        <input type="radio" name="season" value="cald" />
+        <span class="season-dot"></span>
+        <span class="season-text">Vara / Primăvară / Toamnă</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- TOT SITE-UL (blurat cât timp overlay e deschis) -->
+<div id="appWrap" class="blurred">
+  <div class="main">
+
+    <!-- ALERT BAR -->
+    <div id="alertBar">
+      <span id="alertClose" onclick="hideAlert()">✕</span>
+      <div style = "text-align: center;"id="alertText">
+        <strong>NECONFORM</strong> — Anvelopele nu sunt conforme sezonului curent.
+      </div>
+      <div class="alert-actions" id="alertActions" style="display:none;">
+        <button type="button" onclick="openSeasonOverlay()">Schimbă sezonul</button>
+      </div>
+    </div>
+
+    <!-- VERDICT -->
+    <div id="verdict"></div>
+
+    <h2>Metodă</h2>
+    <label><input type="radio" name="method" value="yolo" checked> YOLO</label>
+    <label><input type="radio" name="method" value="manual"> Manual</label>
+
+    <br><br>
+
+    <input type="file" id="file" accept="image/*,video/*"><br>
+    <button onclick="send()">Analizează</button>
+
+    <div id="videoBox" class="preview-box">
+      <video id="videoPreview" controls></video>
+    </div>
+
+    <h3>Detecție</h3>
+    <div class="preview-box">
+      <img id="preview" alt="preview detecție">
+    </div>
+
+    <h3>Pattern prelucrat</h3>
+    <div class="pattern-box">
+      <img id="crop" alt="pattern prelucrat">
+    </div>
+
+    <!-- JSON -->
+    <div id="jsonToggle" onclick="toggleJson()">
+      Detalii tehnice <span>⌄</span>
+    </div>
+    <pre id="out"></pre>
+
+  </div>
+</div>
+
+<script>
+/* ======= STATE ======= */
+let chosenSeason = null; // "iarna" | "cald"
+
+/* ======= THEME ======= */
+function applyThemeBySeason(season){
+  if(season === "iarna") document.body.classList.add("theme-winter");
+  else document.body.classList.remove("theme-winter");
+}
+
+/* ======= OVERLAY CONTROL ======= */
+function showOverlay(){
+  document.getElementById("seasonOverlay").classList.add("show");
+  document.getElementById("appWrap").classList.add("blurred");
+}
+function hideOverlay(){
+  document.getElementById("seasonOverlay").classList.remove("show");
+  document.getElementById("appWrap").classList.remove("blurred");
+}
+
+/* deschide overlay când vrei să schimbi sezonul */
+function openSeasonOverlay(){
+  hideAlert();
+  showOverlay();
+}
+
+/* ======= ALERT ======= */
+function showAlert(withActions=false){
+  const bar = document.getElementById("alertBar");
+  const actions = document.getElementById("alertActions");
+  actions.style.display = withActions ? "flex" : "none";
+  bar.style.display = "block";
+}
+function hideAlert(){
+  document.getElementById("alertBar").style.display = "none";
+  document.getElementById("alertActions").style.display = "none";
+}
+
+/* ======= VIDEO PREVIEW ======= */
+function showVideoImmediately(file){
+  const videoBox = document.getElementById("videoBox");
+  const video = document.getElementById("videoPreview");
+  video.src = URL.createObjectURL(file);
+  videoBox.style.display = "flex";
+  video.style.display = "block";
+  video.load();
+  video.play().catch(()=>{});
+}
+function hideVideo(){
+  const videoBox = document.getElementById("videoBox");
+  const video = document.getElementById("videoPreview");
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  videoBox.style.display = "none";
+}
+
+/* ======= JSON TOGGLE ======= */
+function toggleJson(){
+  const pre = document.getElementById("out");
+  const toggle = document.getElementById("jsonToggle");
+  const hidden = window.getComputedStyle(pre).display === "none";
+  pre.style.display = hidden ? "block" : "none";
+  toggle.classList.toggle("open", hidden);
+}
+
+/* ======= SEASON PILLS UI ======= */
+function setActivePill(season){
+  document.querySelectorAll(".season-pill").forEach(p => p.classList.remove("active"));
+  if(season === "iarna") document.querySelector(".season-pill.winter")?.classList.add("active");
+  if(season === "cald") document.querySelector(".season-pill.warm")?.classList.add("active");
+}
+
+/* click pe pill => select + aplica tema instant + inchide overlay */
+document.getElementById("seasonOptions").addEventListener("click", (e)=>{
+  const pill = e.target.closest(".season-pill");
+  if(!pill) return;
+
+  const input = pill.querySelector('input[name="season"]');
+  if(!input) return;
+
+  input.checked = true;
+
+  const season = input.value; // "iarna" / "cald"
+  chosenSeason = season;
+
+  setActivePill(season);
+  applyThemeBySeason(season);
+
+  hideOverlay();
+});
+
+/* fallback: change */
+document.getElementById("seasonOptions").addEventListener("change", ()=>{
+  const season = document.querySelector('input[name="season"]:checked')?.value;
+  if(!season) return;
+  chosenSeason = season;
+  setActivePill(season);
+  applyThemeBySeason(season);
+  hideOverlay();
+});
+
+/* ======= SEND ======= */
+function send(){
+  if(!chosenSeason){
+    showOverlay();
+    return;
+  }
+
+  hideAlert();
+
+  const f = document.getElementById("file").files[0];
+  if(!f) return alert("Selectează un fișier");
+
+  const method = document.querySelector('input[name="method"]:checked').value;
+
+  if (f.type && f.type.startsWith("video/")) showVideoImmediately(f);
+  else hideVideo();
+
+  const fd = new FormData();
+  fd.append("file", f);
+  fd.append("method", method);
+
+  fetch("/predict", { method:"POST", body:fd })
+    .then(r => r.json())
+    .then(d => {
+      /* VERDICT */
+      const verdict = document.getElementById("verdict");
+      verdict.className = "";
+      verdict.style.display = "block";
+
+      const label = (d.label || "").toLowerCase();
+      verdict.textContent = label.toUpperCase();
+
+      if (label === "vara") verdict.classList.add("verdict-vara");
+      else if (label === "iarna") verdict.classList.add("verdict-iarna");
+      else if (label === "mixt") verdict.classList.add("verdict-mixt");
+
+      /* NECONFORM: iarnă selectat + verdict vara */
+      if (chosenSeason === "iarna" && label === "vara") {
+        showAlert(true);
+      }
+
+      /* JSON */
+      document.getElementById("out").textContent = JSON.stringify(d, null, 2);
+
+      /* PREVIEW */
+      if (d.bbox_url) {
+        const img = document.getElementById("preview");
+        img.src = d.bbox_url + "?t=" + Date.now();
+        img.style.display = "block";
+      }
+
+      /* CROP */
+      if (d.crop_url) {
+        const crop = document.getElementById("crop");
+        crop.src = d.crop_url + "?t=" + Date.now();
+        crop.style.display = "block";
+      }
+    })
+    .catch(err => {
+      alert("Eroare la procesare. Vezi consola / server.");
+      console.error(err);
+    });
+}
+
+/* init: overlay on + blur background */
+showOverlay();
+</script>
+
+</body>
+</html>
