@@ -1,0 +1,6 @@
+EDA Summary
+===========
+
+train: total=180 | pe clase={'iarna': 87, 'mixt': 20, 'vara': 73} | imagini corupte detectate (sample)=0
+validation: total=19 | pe clase={'iarna': 8, 'mixt': 4, 'vara': 7} | imagini corupte detectate (sample)=0
+test: total=19 | pe clase={'iarna': 8, 'mixt': 4, 'vara': 7} | imagini corupte detectate (sample)=0

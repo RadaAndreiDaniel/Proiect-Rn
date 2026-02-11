@@ -1,0 +1,2 @@
+exp,description,accuracy,f1_macro,epochs_ran,batch_size,lr,notes
+Exp_1,ResNet18 + augmentări industriale + sampler ponderat + ReduceLROnPlateau + EarlyStopping,0.7857,0.7323,1,32,0.0003,Model salvat ca optimized_model_final.pt; metrici în final_metrics_final.json

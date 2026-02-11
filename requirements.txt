@@ -1,5 +1,18 @@
+tensorflow>=2.10
 numpy
-opencv-python
-tensorflow
-streamlit
+pandas
+scikit-learn
+joblib
 matplotlib
+streamlit
+Pillow
+
+
+C:\Users\DANI\tread_env39\Scripts\activate (activarea mediului python)
+
+cd C:\Users\DANI\Desktop\Proiect_Final_Rada_Andrei_Daniel_Rn\src\app
+
+python web_api.py
+
+rularea pe serverul local
+http://127.0.0.1:5000/

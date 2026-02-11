@@ -1,0 +1,61 @@
+			┌───────┐
+			│ IDLE  │
+			└───┬───┘
+			    │ User selects image
+ 			    ▼
+		   ┌──────────────────┐
+		   │ LOAD_IMAGE/VIDEO │
+		   └────────┬─────────┘
+			    │ Image valid
+			    ▼
+┌─────────────────────────┐        ┌──────────────────┐
+│ AUTOMATIC_IDENTIFICATION│ ─────  │ MANUAL_ANNOTATION│
+└───┬─────────────────────┘        └───────┬──────────┘
+    │                                      │ Annotation failed
+    │                                      │ (the user uses manual annotation 
+    │                                      │  if automatic detection fails)
+    │                                      │  
+    └───────────────┬──────────────────────┘
+                    ▼
+		┌────────────┐
+		│ PREPROCESS │
+		└───┬────────┘
+		    │ Image ready
+		    ▼
+		┌──────────────┐
+		│ RN_INFERENCE │
+		└───┬──────────┘
+		    │ Prediction done
+		    ▼
+		┌────────────────┐
+		│ DISPLAY_RESULT │
+		└───┬────────────┘
+		    │ End / New image
+		    ▼
+		┌───────┐
+		│ IDLE  │
+		└───────┘
+
+ERROR transitions:
+LOAD_IMAGE ─────────▶ ERROR
+AUTOMATIC_IDENTIFICATION ──▶ ERROR
+ERROR ──────────────▶ IDLE
+
+
+
+Stările principale sunt:
+
+LOAD_IMAGE – încărcarea imaginii de test
+
+AUTOMATIC_IDENTIFICATION - se detecteaza automat banda de rulare din video sau filmare
+
+MANUAL_ANNOTATION – utilizatorul delimitează manual banda de rulare
+
+PREPROCESS – redimensionare și normalizare
+
+RN_INFERENCE – inferența rețelei neuronale
+
+DISPLAY_RESULT – afișarea verdictului și scorurilor de încredere
+
+Starea ERROR gestionează situații precum imagine invalidă sau neidentificare autoamata a benzii de rulare.
+

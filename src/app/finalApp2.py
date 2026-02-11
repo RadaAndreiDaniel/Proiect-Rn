@@ -29,7 +29,7 @@ from data_acquisition.annotator import Annotator
 YOLO_MODEL_PATH = ROOT_PATH / "models" / "best.pt"
 
 # IMPORTANT: folosim checkpoint (contine best model + class_names)
-FINAL_MODEL_PATH = ROOT_PATH / "models" / "trained_model.pt"
+FINAL_MODEL_PATH = ROOT_PATH / "models" / "optimized_model_final.pt"
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

@@ -1,0 +1,10 @@
+split,class,n_images
+train,iarna,87
+train,mixt,20
+train,vara,73
+validation,iarna,8
+validation,mixt,4
+validation,vara,7
+test,iarna,8
+test,mixt,4
+test,vara,7
